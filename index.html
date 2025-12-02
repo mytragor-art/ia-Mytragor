@@ -223,7 +223,7 @@
     // Carrega automaticamente o perfil padrão da IA do arquivo markdown
     (async () => {
       try {
-        const resp = await fetch("http://localhost:3000/perfil-ia-mytragor.md");
+        const resp = await fetch("http://localhost:3000/system-prompt");
         if (resp.ok) {
           const text = await resp.text();
           // Opcional: reduzir o conteúdo para evitar excesso no campo

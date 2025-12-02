@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import OpenAI from 'openai';
+import { readFile } from 'fs/promises';
+import path from 'path';
 
 const apiKey = process.env.OPENAI_API_KEY;
 const port = process.env.PORT || 3000;
@@ -17,6 +19,17 @@ app.use(cors());
 app.use(bodyParser.json());
 // Servir arquivos estáticos do diretório do projeto para permitir o front carregar documentos
 app.use(express.static(process.cwd()));
+
+// Endpoint dedicado para carregar o perfil padrão da IA
+app.get('/system-prompt', async (req, res) => {
+  try {
+    const filePath = path.join(process.cwd(), 'perfil-ia-mytragor.md');
+    const content = await readFile(filePath, 'utf8');
+    res.type('text/plain').send(content);
+  } catch (e) {
+    res.status(404).json({ error: 'perfil-ia-mytragor.md não encontrado' });
+  }
+});
 
 const openai = new OpenAI({ apiKey });
 
