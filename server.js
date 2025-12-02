@@ -7,14 +7,16 @@ import OpenAI from 'openai';
 const apiKey = process.env.OPENAI_API_KEY;
 const port = process.env.PORT || 3000;
 
-if (!apiKey) {
-  console.error('Erro: OPENAI_API_KEY não definida no arquivo .env');
+if (!apiKey || /<COLOQUE_SUA_CHAVE_AQUI>/i.test(apiKey)) {
+  console.error('Erro: OPENAI_API_KEY ausente ou placeholder no arquivo .env');
   process.exit(1);
 }
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+// Servir arquivos estáticos do diretório do projeto para permitir o front carregar documentos
+app.use(express.static(process.cwd()));
 
 const openai = new OpenAI({ apiKey });
 
@@ -35,7 +37,7 @@ app.post('/api/chat', async (req, res) => {
 
     // Chamada ao modelo. Use um modelo disponível na sua conta.
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages,
       temperature: 0.7,
     });
@@ -43,8 +45,10 @@ app.post('/api/chat', async (req, res) => {
     const reply = completion.choices?.[0]?.message?.content?.trim() || 'Sem resposta.';
     return res.json({ reply });
   } catch (err) {
-    console.error('Erro no /api/chat:', err);
-    return res.status(500).json({ error: 'Erro interno ao processar a solicitação.' });
+    const status = err?.status || err?.code || 500;
+    const msg = typeof err?.message === 'string' ? err.message : 'Erro interno ao processar a solicitação.';
+    console.error('Erro no /api/chat:', msg);
+    return res.status(500).json({ error: msg });
   }
 });
 

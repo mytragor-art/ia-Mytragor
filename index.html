@@ -220,6 +220,23 @@
     const sendBtn = document.getElementById("send-btn");
     const systemPrompt = document.getElementById("system-prompt");
 
+    // Carrega automaticamente o perfil padrão da IA do arquivo markdown
+    (async () => {
+      try {
+        const resp = await fetch("http://localhost:3000/perfil-ia-mytragor.md");
+        if (resp.ok) {
+          const text = await resp.text();
+          // Opcional: reduzir o conteúdo para evitar excesso no campo
+          systemPrompt.value = text;
+        } else {
+          // ...existing code...
+        }
+      } catch (e) {
+        // Se não conseguir carregar, mantém vazio e segue
+        // ...existing code...
+      }
+    })();
+
     sendBtn.addEventListener("click", async () => {
       const userMessage = userInput.value.trim();
       const systemMessage = systemPrompt.value.trim();
