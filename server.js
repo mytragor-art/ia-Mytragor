@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import OpenAI from 'openai';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 const apiKey = process.env.OPENAI_API_KEY;
 const port = process.env.PORT || 3000;
@@ -17,13 +18,17 @@ if (!apiKey || /<COLOQUE_SUA_CHAVE_AQUI>/i.test(apiKey)) {
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-// Servir arquivos estáticos do diretório do projeto para permitir o front carregar documentos
-app.use(express.static(process.cwd()));
+// Resolve diretório base do arquivo atual (independente de onde o processo foi iniciado)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const baseDir = __dirname;
+// Servir arquivos estáticos a partir do diretório do projeto
+app.use(express.static(baseDir));
 
 // Endpoint dedicado para carregar o perfil padrão da IA
 app.get('/system-prompt', async (req, res) => {
   try {
-    const filePath = path.join(process.cwd(), 'perfil-ia-mytragor.md');
+    const filePath = path.join(baseDir, 'perfil-ia-mytragor.md');
     const content = await readFile(filePath, 'utf8');
     res.type('text/plain').send(content);
   } catch (e) {
